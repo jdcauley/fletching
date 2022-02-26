@@ -1,6 +1,6 @@
 {
   "name": "fletching",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Stupdily Simple Fetch Abstraction",
   "main": "index.js",
   "scripts": {
