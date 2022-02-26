@@ -1,4 +1,4 @@
-const Fletch = (base) => {
+const fletching = (base) => {
   const defaults = {};
   if (base.root) {
     defaults.root = base.root;
@@ -98,4 +98,4 @@ const Fletch = (base) => {
   };
 };
 
-(module.exports = Fletch), { Fletch };
+(module.exports = fletching), { fletching };
