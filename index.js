@@ -1,5 +1,8 @@
 const fletching = (base) => {
-  const defaults = {};
+  const defaults = {
+    root: "/",
+    debug: false,
+  };
   if (base.root) {
     defaults.root = base.root;
   }
@@ -30,9 +33,13 @@ const fletching = (base) => {
     }
     if (!fetchConfig.headers) {
       const headers = new Headers();
-      headers.append("Content-Type", "application/json");
+      headers.append("Content-Type", "application/json; charset=utf-8");
       headers.append("Accept", "application/json");
       fetchConfig.headers = headers;
+    }
+
+    if (defaults.debug) {
+      console.log({ uri, config });
     }
 
     return fetch(url, fetchConfig)
