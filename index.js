@@ -87,6 +87,14 @@ const fletching = (base) => {
 
       return send(uri, config);
     },
+    patch: (uri, data) => {
+      const config = {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      };
+
+      return send(uri, config);
+    },
     delete: (uri, data) => {
       const config = {
         method: "DELETE",
