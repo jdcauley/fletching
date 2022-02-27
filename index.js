@@ -43,20 +43,35 @@ const fletching = (base) => {
     }
 
     return fetch(url, fetchConfig)
-      .then((response) =>
-        response.json().then((data) => {
-          let result = {};
-          result.data = data;
-          result.ok = response.ok;
+      .then((response) => {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          return response.json().then((data) => {
+            let result = {};
+            result.data = data;
+            result.ok = response.ok;
 
-          let headers = {};
-          response.headers.forEach((v, k) => {
-            headers[k] = v;
+            let headers = {};
+            response.headers.forEach((v, k) => {
+              headers[k] = v;
+            });
+            result.headers = headers;
+            return result;
           });
-          result.headers = headers;
-          return result;
-        })
-      )
+        } else {
+          return response.text().then((text) => {
+            result.data = text;
+            result.ok = response.ok;
+
+            let headers = {};
+            response.headers.forEach((v, k) => {
+              headers[k] = v;
+            });
+            result.headers = headers;
+            return result;
+          });
+        }
+      })
       .then((data) => {
         if (!data.ok) {
           return Promise.reject(data);
