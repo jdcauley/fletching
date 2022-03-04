@@ -1,14 +1,22 @@
 const fletching = (base) => {
+  const defaultHeaders = new Headers();
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  headers.set("Accept", "application/json");
+
   const defaults = {
     root: "/",
     debug: false,
+    headers: defaultHeaders,
   };
+
   if (base.root) {
     defaults.root = base.root;
   }
 
   if (base.headers) {
-    defaults.headers = base.headers;
+    base.headers.forEach((headerValue, headerName) => {
+      defaults.headers.set(headerName, headerValue);
+    });
   }
 
   const send = (uri, config) => {
@@ -26,23 +34,23 @@ const fletching = (base) => {
       url = `${defaults.root}${safeUri}`;
     }
 
-    const fetchConfig = config;
+    const requestConfig = config;
 
     if (defaults && defaults.headers) {
-      fetchConfig.headers = defaults.headers;
+      requestConfig.headers = defaults.headers;
     }
-    if (!fetchConfig.headers) {
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json; charset=utf-8");
-      headers.append("Accept", "application/json");
-      fetchConfig.headers = headers;
+
+    if (config.headers) {
+      config.headers.forEach((headerValue, headerName) => {
+        requestConfig.headers.headers.set(headerName, headerValue);
+      });
     }
 
     if (defaults.debug) {
-      console.log({ uri, config });
+      console.log({ uri, requestConfig });
     }
 
-    return fetch(url, fetchConfig)
+    return fetch(url, requestConfig)
       .then((response) => {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -50,6 +58,7 @@ const fletching = (base) => {
             let result = {};
             result.data = data;
             result.ok = response.ok;
+            result.status = response.status;
 
             let headers = {};
             response.headers.forEach((v, k) => {
@@ -74,11 +83,13 @@ const fletching = (base) => {
       })
       .then((data) => {
         if (!data.ok) {
-          return Promise.reject(data);
+          return Promise.resolve({ ok: data.ok, response: data, error: null });
         }
-        return data;
+        return Promise.resolve({ ok: data.ok, response: data, error: null });
       })
-      .catch((err) => Promise.reject(err));
+      .catch((err) =>
+        Promise.resolve({ ok: false, response: null, error: err })
+      );
   };
 
   return {
