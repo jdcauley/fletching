@@ -1,7 +1,7 @@
 const fletching = (base) => {
   const defaultHeaders = new Headers();
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  headers.set("Accept", "application/json");
+  defaultHeaders.set("Content-Type", "application/json; charset=utf-8");
+  defaultHeaders.set("Accept", "application/json");
 
   const defaults = {
     root: "/",
@@ -14,14 +14,14 @@ const fletching = (base) => {
   }
 
   if (base.headers) {
-    base.headers.forEach((headerValue, headerName) => {
-      defaults.headers.set(headerName, headerValue);
+    Object.keys(base.headers).forEach((key) => {
+      defaults.headers.set(key, base.headers[key]);
     });
   }
 
   const send = (uri, config) => {
     let url = uri;
-
+    console.log(config);
     /**
      * When using ugly permalinks, the REST base will
      * already include a ? so we need to transform
@@ -40,9 +40,9 @@ const fletching = (base) => {
       requestConfig.headers = defaults.headers;
     }
 
-    if (config.headers) {
-      config.headers.forEach((headerValue, headerName) => {
-        requestConfig.headers.headers.set(headerName, headerValue);
+    if (config.headers != defaults.headers) {
+      Object.keys(base.headers).forEach((key) => {
+        requestConfig.headers.set(key, base.headers[key]);
       });
     }
 
@@ -53,6 +53,20 @@ const fletching = (base) => {
     return fetch(url, requestConfig)
       .then((response) => {
         const contentType = response.headers.get("content-type");
+        let headers = {};
+        response.headers.forEach((v, k) => {
+          headers[k] = v;
+        });
+
+        if (response.status === 204) {
+          return Promise.resolve({
+            ok: response.ok,
+            status: response.status,
+            data: null,
+            error: null,
+            headers: headers,
+          });
+        }
         if (contentType && contentType.indexOf("application/json") !== -1) {
           return response.json().then((data) => {
             let result = {};
@@ -60,10 +74,6 @@ const fletching = (base) => {
             result.ok = response.ok;
             result.status = response.status;
 
-            let headers = {};
-            response.headers.forEach((v, k) => {
-              headers[k] = v;
-            });
             result.headers = headers;
             return result;
           });
@@ -72,10 +82,6 @@ const fletching = (base) => {
             result.data = text;
             result.ok = response.ok;
 
-            let headers = {};
-            response.headers.forEach((v, k) => {
-              headers[k] = v;
-            });
             result.headers = headers;
             return result;
           });
@@ -83,12 +89,30 @@ const fletching = (base) => {
       })
       .then((data) => {
         if (!data.ok) {
-          return Promise.resolve({ ok: data.ok, response: data, error: null });
+          return Promise.resolve({
+            ok: data.ok,
+            status: data.status,
+            data: data.data,
+            error: null,
+            headers: data.headers,
+          });
         }
-        return Promise.resolve({ ok: data.ok, response: data, error: null });
+        return Promise.resolve({
+          ok: data.ok,
+          status: data.status,
+          data: data.data,
+          error: null,
+          headers: data.headers,
+        });
       })
       .catch((err) =>
-        Promise.resolve({ ok: false, response: null, error: err })
+        Promise.resolve({
+          ok: false,
+          status: data.status,
+          data: null,
+          error: err,
+          headers: data.headers,
+        })
       );
   };
 
@@ -105,34 +129,47 @@ const fletching = (base) => {
       }
       return send(uri, config);
     },
-    post: (uri, data) => {
+    post: (uri, data = null) => {
       const config = {
         method: "POST",
-        body: JSON.stringify(data),
       };
+
+      if (data) {
+        config.body = JSON.stringify(data);
+      }
+
       return send(uri, config);
     },
-    put: (uri, data) => {
+    put: (uri, data = null) => {
       const config = {
         method: "PUT",
-        body: JSON.stringify(data),
       };
+
+      if (data) {
+        config.body = JSON.stringify(data);
+      }
 
       return send(uri, config);
     },
-    patch: (uri, data) => {
+    patch: (uri, data = null) => {
       const config = {
         method: "PATCH",
-        body: JSON.stringify(data),
       };
+
+      if (data) {
+        config.body = JSON.stringify(data);
+      }
 
       return send(uri, config);
     },
-    delete: (uri, data) => {
+    delete: (uri, data = null) => {
       const config = {
         method: "DELETE",
-        body: JSON.stringify(data),
       };
+
+      if (data) {
+        config.body = JSON.stringify(data);
+      }
 
       return send(uri, config);
     },
