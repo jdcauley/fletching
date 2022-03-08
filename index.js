@@ -21,7 +21,6 @@ const fletching = (base) => {
 
   const send = (uri, config) => {
     let url = uri;
-    console.log(config);
     /**
      * When using ugly permalinks, the REST base will
      * already include a ? so we need to transform
