@@ -175,4 +175,4 @@ const fletching = (base) => {
   };
 };
 
-(module.exports = fletching), { fletching };
+module.exports = { fletching };
